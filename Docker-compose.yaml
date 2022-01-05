@@ -1,0 +1,56 @@
+version: '3'
+services:
+  postgres:
+    image: 'postgres:latest'
+    environment:
+      - POSTGRES_PASSWORD=postgres_password    
+  redis:
+    image: 'redis:latest'
+  nginx:
+    restart: always
+    build: 
+      dockerfile: Dockerfile.dev
+      context: ./nginx
+    ports:
+      - '3050:80'    
+  api:
+    build:
+      dockerfile: Dockerfile.dev
+      # DAHA ÖNCE BUNU . İLE YAPMIŞTIK ŞİMDİ BURADA ANA DOSYADAN ./SERVER DOSYASINI POINT EDIYORUZ
+      context: ./server
+    volumes:
+        # DO NOT OVERRIDE THIS FOLDER, JUST KEEP IT AS ITIS
+      - /app/node_modules
+      - ./server:/app
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - PGUSER=postgres
+      - PGHOST=postgres
+      - PGDATABASE=postgres
+      - PGPASSWORD=postgres_password
+      - PGPORT=5432
+  client:
+    stdin_open: true
+    build: 
+      dockerfile: Dockerfile.dev
+      context: ./client
+    volumes:
+      # meaning that do not touch app/node_modules, do not override
+      - /app/node_modules
+      - ./client:/app
+  worker:
+    build:
+      dockerfile: Dockerfile.dev
+      context: ./worker
+    volumes:
+      - /app/node_modules
+      - ./worker:/app
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379                  
+
+# hatırlatma, bu servisler kısmında verdiğimiz isimler ile birbirleriyle iletişime geçebiliyorlar
+# çünkü bu onları aynı networke koyuyor ve o isimlerde birer alias oluyor.
+
+
