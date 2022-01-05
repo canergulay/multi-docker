@@ -1,0 +1,26 @@
+sudo: required
+services:
+  - docker
+
+
+## this is where we build images on which we will run tests
+before_install:
+  - docker build -t canergulay/react-test -f ./client/Dockerfile.dev ./client
+
+
+## this is where we run our tests
+script:
+  - docker run -e CI=true canergulay/react-test npm test
+
+## this is the stage where we will continue with deploying process.
+after_success:
+  - docker build -t canergulay/multi-client ./client
+  - docker build -t canergulay/multi-nginx ./nginx
+  - docker build -t canergulay/multi-server ./server
+  - docker build -t canergulay/multi-worker ./worker
+
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --pasword-stdin
+  - docker push canergulay/multi-client
+  - docker push canergulay/multi-nginx
+  - docker push canergulay/multi-server
+  - docker push canergulay/multi-worker
