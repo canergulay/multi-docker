@@ -19,7 +19,7 @@ after_success:
   - docker build -t canergulay/multi-server ./server
   - docker build -t canergulay/multi-worker ./worker
 
-  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --pasword-stdin
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
   - docker push canergulay/multi-client
   - docker push canergulay/multi-nginx
   - docker push canergulay/multi-server
